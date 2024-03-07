@@ -19,11 +19,11 @@ export function run(input) {
   const orderTotal = parseFloat(input.cart.cost.totalAmount.amount);
   const errors = [];
 
-  // Orders with subtotals greater than $1,000 are available only to established customers.
-  if (orderTotal < 1000.0) {
+  // commented due to user experience issue
+  // if (orderTotal < 1000.0) {
 
-    errors.push(error);
-  }
+  //   errors.push(error);
+  // }
 
   return {
     errors
