@@ -17,14 +17,15 @@ import { useEffect, useState} from 'react';
 
 
 
-export const checkoutExtensionZero =  reactExtension(
-  'purchase.checkout.contact.render-after',
-  () => <CheckoutExtensionZero />,
+export const checkoutExtensionThree =  reactExtension(
+  'purchase.checkout.block.render',
+  () => <CheckoutExtensionThree />,
 );
 
 
-function CheckoutExtensionZero(){
+function CheckoutExtensionThree(){
   const cart = useCartLines()
+
   const targetedAmount = 100;
   const targetedCur = "USD";
   const [validationError, setValidationError] = useState("");
@@ -33,8 +34,11 @@ function CheckoutExtensionZero(){
   
   const canBlockProgress = useExtensionCapability("block_progress");
   
+
+  // validation process for limiting the minimum buying amount
   useBuyerJourneyIntercept(({ canBlockProgress }) => {
     
+    // disallowing progress conditionally
     if (canBlockProgress && !myTotalCost ) {
       return {
         behavior: "block",
@@ -48,6 +52,7 @@ function CheckoutExtensionZero(){
       };
     }
     
+    // disallowing progress conditionally
     if (canBlockProgress && myTotalCost < targetedAmount) {
         return {
           behavior: "block",
@@ -61,6 +66,7 @@ function CheckoutExtensionZero(){
         };
       }
       
+      // allowing to proceed further
       return {
         behavior: "allow",
         perform: () => {
@@ -70,8 +76,9 @@ function CheckoutExtensionZero(){
       }
     });
     
+    // calculate the total cost and storing it for further use
     useEffect(()=>{
-      console.log(cart)
+      // console.log(cart)
       let tempCost = 0;
       if(cart.length> 0){
         cart.forEach(elem => {
@@ -82,11 +89,93 @@ function CheckoutExtensionZero(){
           tempCost += mCost;
         })
       }
-      // console.log(tempCost)
       setMyTotalCost(tempCost)
     },[])
     
     
+    // function for clear the validation block
+    function clearValidationErrors() {
+      setValidationError("");
+    }
+    return null;
+  }
+export const checkoutExtensionZero =  reactExtension(
+  'purchase.checkout.contact.render-after',
+  () => <CheckoutExtensionZero />,
+);
+
+
+function CheckoutExtensionZero(){
+  const cart = useCartLines()
+
+  const targetedAmount = 100;
+  const targetedCur = "USD";
+  const [validationError, setValidationError] = useState("");
+  const [myTotalCost,setMyTotalCost] =useState(0)
+  const [myCurrency,setMyCurrency] = useState(null)
+  
+  const canBlockProgress = useExtensionCapability("block_progress");
+  
+
+  // validation process for limiting the minimum buying amount
+  useBuyerJourneyIntercept(({ canBlockProgress }) => {
+    
+    // disallowing progress conditionally
+    if (canBlockProgress && !myTotalCost ) {
+      return {
+        behavior: "block",
+        reason: "No cart data is available",
+        perform: (result) => {
+          // If progress can be blocked, then set a validation error on the custom field
+          if (result.behavior === "block") {
+            setValidationError("Something went wrong.");
+          }
+        },
+      };
+    }
+    
+    // disallowing progress conditionally
+    if (canBlockProgress && myTotalCost < targetedAmount) {
+        return {
+          behavior: "block",
+          reason: `Please buy product equivalent to ${targetedAmount} ${targetedCur}.`,
+          errors: [
+            {
+              // Show a validation error on the page
+              message:`Please buy product equivalent to ${targetedAmount} ${targetedCur}.`
+            },
+          ],
+        };
+      }
+      
+      // allowing to proceed further
+      return {
+        behavior: "allow",
+        perform: () => {
+          // Ensure any errors are hidden
+          clearValidationErrors();
+        },
+      }
+    });
+    
+    // calculate the total cost and storing it for further use
+    useEffect(()=>{
+      // console.log(cart)
+      let tempCost = 0;
+      if(cart.length> 0){
+        cart.forEach(elem => {
+          if(!myCurrency){
+            setMyCurrency(elem['cost']['totalAmount']['currencyCode'])
+          }
+          const mCost = elem['cost']['totalAmount']['amount']
+          tempCost += mCost;
+        })
+      }
+      setMyTotalCost(tempCost)
+    },[])
+    
+    
+    // function for clear the validation block
     function clearValidationErrors() {
       setValidationError("");
     }

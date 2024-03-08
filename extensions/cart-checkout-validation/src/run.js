@@ -10,20 +10,14 @@
  * @returns {FunctionRunResult}
  */
 export function run(input) {
-  const error = {
-    localizedMessage:
-        "Order must be over 1000 bdt",
-    target: "cart"
-  };
-  // Parse the decimal (serialized as a string) into a float.
-  const orderTotal = parseFloat(input.cart.cost.totalAmount.amount);
-  const errors = [];
+  // const errors = input.cart.lines
+  //   .filter(({ quantity }) => quantity > 1)
+  //   .map(() => ({
+  //     localizedMessage: "Not possible to order more than one of each",
+  //     target: "cart",
+  //   }));
 
-  // commented due to user experience issue
-  // if (orderTotal < 1000.0) {
-
-  //   errors.push(error);
-  // }
+  const errors=[]
 
   return {
     errors
